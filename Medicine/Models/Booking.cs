@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Medicine.Models
 {
@@ -7,23 +8,31 @@ namespace Medicine.Models
 		public int Id { get; set; }
 
 		[ForeignKey("Specialization")]
+		[Required(ErrorMessage = "The  Specialization is Required")]
 		public int Specialization_id { get; set; }
 		public Specialization? Specialization { get; set; }
 
 		[ForeignKey("doctor")]
-		public int doctor_id { get; set; }
+        [Required(ErrorMessage = "The Doctor is Required")]
+
+        public int doctor_id { get; set; }
 		public Doctor? doctor { get; set; }
 
-		public string Name { get; set; }
+        [Required(ErrorMessage = "The Name is Required")]
+
+        public string Name { get; set; }
 
 
 		[ForeignKey("patient")]
-		public int Patient_id { get; set; }
+        [Required(ErrorMessage = "The Patient is Required")]
+
+        public int Patient_id { get; set; }
 		public Patient? patient { get; set; }
 
 
 		[ForeignKey("TimeSlots")]
-		public int DateTime { get; set; }
+        [Required(ErrorMessage = "The Appointment is Required")]
+        public int DateTime { get; set; }
 		public TimeSlots? TimeSlots { get; set; }
 
 

@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Medicine.Repozitorys;
 using System.Diagnostics.Contracts;
 using Medicine.Repository;
+using Microsoft.Extensions.FileProviders;
 
 namespace Medicine
 {
@@ -42,7 +43,9 @@ namespace Medicine
             builder.Services.AddScoped<ISpecialization, RepoSpecialization>();
             builder.Services.AddScoped<Ipatient, PatientRepo>();
             builder.Services.AddScoped<IDoctor, RepoDoctor>();
+            builder.Services.AddScoped<Ibooking,BookingRepository>();
             builder.Services.AddScoped<IReview,ReviewRepo>();
+            builder.Services.AddScoped<IFileService, FileService>();
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
@@ -134,7 +137,12 @@ namespace Medicine
                     app.UseSwagger();
                     app.UseSwaggerUI();
                 }
-
+                app.UseStaticFiles(new StaticFileOptions
+                {
+                    FileProvider = new PhysicalFileProvider(
+           Path.Combine(builder.Environment.ContentRootPath, "Uploads")),
+                    RequestPath = "/Resources"
+                });
                 app.UseCors("AngularConsumer");
                 app.UseAuthentication();
                 app.UseAuthorization();

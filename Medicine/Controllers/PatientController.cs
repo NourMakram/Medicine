@@ -1,4 +1,5 @@
-﻿using Medicine.Dtos.Patient;
+﻿using Medicine.Dtos;
+using Medicine.Dtos.Patient;
 using Medicine.Models;
 using Medicine.Repository;
 using Microsoft.AspNetCore.Http;
@@ -14,11 +15,15 @@ namespace Medicine.Controllers
 
         private readonly Ipatient _repository;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IFileService _fileService;
 
-        public PatientController(Ipatient repository, UserManager<ApplicationUser> userManager)
+        public PatientController(Ipatient repository,
+            UserManager<ApplicationUser> userManager,
+            IFileService fileService)
         {
             _repository = repository;
             _userManager = userManager;
+            _fileService = fileService;
         }
         [HttpGet("GetById/{id}")]
         public ActionResult<List<PatientDto>> GetById(string id)
@@ -28,7 +33,7 @@ namespace Medicine.Controllers
         }
 
         [HttpPost("PatientsAfterEdit/{id}")]
-        public async Task<IActionResult> Edit(string id, PatientDto model)
+        public async Task<IActionResult> Edit(string id, [FromForm] PatientDto model)
         {
 
             try
@@ -37,6 +42,20 @@ namespace Medicine.Controllers
                 var user = await _userManager.FindByIdAsync(id);
                 if (user != null)
                 {
+                    string oldimage = user.ImageUrl;
+                    if (model.ImageFile != null)
+                    {
+                        await _fileService.DeleteImage(oldimage);
+                    }
+
+                    if (model.ImageFile != null)
+                    {
+                        var fileResult = _fileService.SaveImage(model.ImageFile);
+                        if (fileResult.Item1 == 1)
+                        {
+                            model.ImageUrl = fileResult.Item2; // getting name of image
+                        }
+                    }
                     user.PhoneNumber = model.PhoneNumber;
                     user.UserName = model.UsreName;
                     user.Email = model.Email;

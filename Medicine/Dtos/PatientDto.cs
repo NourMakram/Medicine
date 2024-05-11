@@ -1,4 +1,5 @@
 ﻿using Medicine.Models;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Medicine.Dtos.Patient
@@ -8,7 +9,11 @@ namespace Medicine.Dtos.Patient
         public int Id { get; set; }
         public string BloodType { get; set; }
         public string UsreName { get; set; }
-        public string ImageUrl { get; set; }
+        public string? ImageUrl { get; set; }
+
+        //[NotMapped]
+        [Required(ErrorMessage = "Upload Image Is required")]
+        public IFormFile? ImageFile { get; set; }
         public string Email { get; set; }
         public string PhoneNumber { set; get; }
 

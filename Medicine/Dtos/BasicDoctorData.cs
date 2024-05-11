@@ -8,7 +8,6 @@
         public string Bio {  get; set; }
         public string Gender {  get; set; }
         public string About { get; set; }
-        public string ImageUrl { get; set; }
 
         public float TicketPrice { get; set; }
     }

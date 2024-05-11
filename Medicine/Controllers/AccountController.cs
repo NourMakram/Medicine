@@ -1,5 +1,6 @@
 ﻿using Medicine.Dtos;
 using Medicine.Models;
+using Medicine.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -16,17 +17,28 @@ namespace Medicine.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
         private readonly ApplicationDbContext _context;
-        public AccountController(UserManager<ApplicationUser> userManager, IConfiguration configuration, ApplicationDbContext context)
+        private readonly IFileService _fileService; 
+        public AccountController(UserManager<ApplicationUser> userManager, IConfiguration configuration, ApplicationDbContext context , IFileService fileService)
         {
             _context = context;
             _userManager = userManager;
             _configuration = configuration;
+            _fileService = fileService;
         }
         [HttpPost("register")]//api/controller/register
-        public async Task<IActionResult> Register(RegisterDto registerDto)
+        public async Task<IActionResult> Register([FromForm] RegisterDto registerDto)
         {
             if (ModelState.IsValid)
             {
+                if (registerDto.ImageFile != null)
+                {
+                    var fileResult = _fileService.SaveImage(registerDto.ImageFile);
+                    if (fileResult.Item1 == 1)
+                    {
+                        registerDto.ImageUrl = fileResult.Item2; // getting name of image
+                    }
+                }
+
                 ApplicationUser _newUser = new ApplicationUser()
                 {
                     Email = registerDto.Email,
@@ -34,6 +46,7 @@ namespace Medicine.Controllers
                     PasswordHash = registerDto.Password
 
                 };
+                
                 //create account in db
                 IdentityResult result = await _userManager.CreateAsync(_newUser, registerDto.Password);
 
@@ -43,6 +56,28 @@ namespace Medicine.Controllers
                 }
                 var Role = registerDto.Role;
                 var assignRoleResult = await _userManager.AddToRoleAsync(_newUser, Role);
+               
+                
+                if (Role == "Doctor")
+                {
+                     _context.Doctors.Add(new Doctor()
+                    {
+                        userId = _newUser.Id,
+                        TicketPrice=0
+
+                    }) ;
+                    _context.SaveChanges();
+
+                }
+                else
+                {
+                     _context.Patients.Add(new Patient()
+                    {
+                        userId = _newUser.Id,
+                    });
+                    _context.SaveChanges();
+
+                }
 
                 if (!assignRoleResult.Succeeded)
                 {

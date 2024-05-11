@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Medicine.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240501182131_init")]
-    partial class init
+    [Migration("20240511142837_initialCreate")]
+    partial class initialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -151,7 +151,8 @@ namespace Medicine.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
 
@@ -167,15 +168,12 @@ namespace Medicine.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("About")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Bio")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Location")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("SpecializationId")
@@ -325,11 +323,39 @@ namespace Medicine.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Specializations");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Cardiology"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Dermatology"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Endocrinology"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Gastroenterology"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Neurology"
+                        });
                 });
 
             modelBuilder.Entity("Medicine.Models.TimeSlots", b =>
@@ -530,7 +556,7 @@ namespace Medicine.Migrations
 
             modelBuilder.Entity("Medicine.Models.Doctor", b =>
                 {
-                    b.HasOne("Medicine.Models.Specialization", null)
+                    b.HasOne("Medicine.Models.Specialization", "Specialization")
                         .WithMany("Doctors")
                         .HasForeignKey("SpecializationId");
 
@@ -539,6 +565,8 @@ namespace Medicine.Migrations
                         .HasForeignKey("userId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Specialization");
 
                     b.Navigation("User");
                 });

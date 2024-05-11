@@ -16,24 +16,47 @@ namespace Medicine.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
 
         private readonly IDoctor _Doctor;
+        private readonly IFileService _fileService;
 
 
-        public DoctorController(UserManager<ApplicationUser> userManager, IDoctor doctor)
+        public DoctorController(UserManager<ApplicationUser> userManager, IDoctor doctor, IFileService fileService)
         {
             _userManager = userManager;
             _Doctor = doctor;
+            _fileService= fileService;
         }
         [HttpGet]
-        public IActionResult GetALLDoctors()
+        public IActionResult GetALLDoctors(string? search)
         {
-
             var doctors = _Doctor.GetAll();
+            List<SpecilizationDto> doctorsAfterSearch = doctors;
+
+
+            if (!string.IsNullOrEmpty(search))
+            {
+              var SearResult=  doctors.Where(d => d.DoctorName.Contains(search)).ToList();
+                if (SearResult != null)
+                {
+                    doctorsAfterSearch = SearResult;
+                }
+                
+            }
+
+
+
             if (doctors == null || doctors.Count == 0)
             {
                 return NotFound("No doctors found.");
             }
 
-            return Ok(doctors);
+            return Ok(doctorsAfterSearch);
+            //var doctors = _Doctor.GetAll();
+            //if (doctors == null || doctors.Count == 0)
+            //{
+            //    return NotFound("No doctors found.");
+            //}
+
+            //return Ok(doctors);
         }
         [HttpGet("GetDoctorById/{doctorId:int}")]
         public IActionResult GetDoctorById (int doctorId)
@@ -141,7 +164,7 @@ namespace Medicine.Controllers
 
 
         [HttpPut("{UserId}")]
-        public async Task<IActionResult> UpdateDoctorProfile(string UserId, [FromBody] UpdateDoctorDto updateDoctorDto)
+        public async Task<IActionResult> UpdateDoctorProfile(string UserId, [FromForm] UpdateDoctorDto updateDoctorDto)
         {
             var doctorFromDb = _Doctor.GetByUserId(UserId);
 
@@ -150,10 +173,23 @@ namespace Medicine.Controllers
                 return NotFound("الطبيب غير موجود.");
             }
 
+            string oldimage = doctorFromDb.User.ImageUrl;
+            if (updateDoctorDto.ImageFile != null)
+            {
+                await _fileService.DeleteImage(oldimage);
+            }
+            if (updateDoctorDto.ImageFile != null)
+            {
+                var fileResult = _fileService.SaveImage(updateDoctorDto.ImageFile);
+                if (fileResult.Item1 == 1)
+                {
+                    updateDoctorDto.ImageUrl = fileResult.Item2; // getting name of image
+                }
+            }
             doctorFromDb.User.UserName = updateDoctorDto.BasicInfo.DoctorName;
             doctorFromDb.User.Email = updateDoctorDto.BasicInfo.Email;
             doctorFromDb.User.PhoneNumber = updateDoctorDto.BasicInfo.Phone;
-            doctorFromDb.User.ImageUrl = updateDoctorDto.BasicInfo.ImageUrl;
+            doctorFromDb.User.ImageUrl = updateDoctorDto.ImageUrl;
 
             var userUpdateResult = await _userManager.UpdateAsync(doctorFromDb.User);
             if (!userUpdateResult.Succeeded)
