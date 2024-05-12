@@ -29,8 +29,8 @@ namespace Medicine.Repository
                      doctorName = b.doctor.User.UserName,
                      patientName = b.patient.User.UserName,
                      day = b.doctor.TimeSlots[0].Day,
-                     from = b.TimeSlots.Form,
-                     to = b.TimeSlots.To,
+                     from = (TimeOnly)b.TimeSlots.Form,
+                     to = (TimeOnly)b.TimeSlots.To,
                  })
             .ToList();
         }
@@ -46,8 +46,8 @@ namespace Medicine.Repository
                                 doctorName = b.doctor.User.UserName,
                                 patientName = b.patient.User.UserName,
                                 day = b.doctor.TimeSlots[0].Day,
-                                from = b.TimeSlots.Form,
-                                to = b.TimeSlots.To,
+                                from = (TimeOnly)b.TimeSlots.Form,
+                                to = (TimeOnly)b.TimeSlots.To,
                             })
                        .ToList();
         }

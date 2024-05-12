@@ -1,5 +1,6 @@
 ﻿using Medicine.Dtos;
 using Medicine.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace Medicine.Repository
@@ -74,6 +75,8 @@ namespace Medicine.Repository
         
         public void UpdateQualifications(ICollection<Qualifications> existingQualifications, List<QualificationDto> updatedQualifications)
         {
+            if (updatedQualifications == null) return;  
+
             foreach (var qualification in updatedQualifications)
             {
                 var existingQual = existingQualifications.FirstOrDefault(q => q.Id == qualification.Id);
@@ -103,6 +106,12 @@ namespace Medicine.Repository
 
         public void UpdateExperiences(ICollection<Experience> existingExperiences, List<ExperienceDto> updatedExperiences)
         {
+            if (updatedExperiences == null) return; 
+
+            if (existingExperiences == null)
+            {
+                existingExperiences = new List<Experience>();
+            }
             foreach (var experience in updatedExperiences)
             {
                 var existingExper = existingExperiences.FirstOrDefault(q => q.Id == experience.Id);
@@ -130,6 +139,11 @@ namespace Medicine.Repository
         }
         public void UpdateTimeSlot(ICollection<TimeSlots> existingTimeSlot, List<TimeSlotDto> updatedTimeSlot)
         {
+            if (updatedTimeSlot == null) {
+                Console.WriteLine("no updated");
+                return;
+            } 
+
             foreach (var timeSlot in updatedTimeSlot)
             {
                 Console.WriteLine("Checking qualification with ID: " + timeSlot.Id);
@@ -137,6 +151,7 @@ namespace Medicine.Repository
                 var existingTS = existingTimeSlot.FirstOrDefault(q => q.Id == timeSlot.Id);
                 if (existingTS != null)
                 {
+                    Console.WriteLine("update this TimeSlot.");
                     existingTS.Id = timeSlot.Id;
                     existingTS.Day = timeSlot.DayTimeSlot;
                     existingTS.Form = timeSlot.Form;
@@ -144,6 +159,7 @@ namespace Medicine.Repository
                 }
                 else
                 {
+                    Console.WriteLine("Adding new TimeSlots.");
                     existingTimeSlot.Add(new TimeSlots
                     {
                         Id = timeSlot.Id,
